@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Станция ZETA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00ff41;
+            --secondary-color: #008f11;
+            --bg-color: #0a0a0a;
+            --panel-bg: rgba(0, 30, 0, 0.3);
+            --error-color: #ff0033;
+            --warning-color: #ffcc00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+            position: relative;
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 100%;
+            border: 1px solid var(--secondary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(
+                    rgba(0, 255, 65, 0.1),
+                    rgba(0, 255, 65, 0.1) 1px,
+                    transparent 1px,
+                    transparent 5px
+                );
+            background-size: 100% 5px;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 -100px; }
+            100% { background-position: 0 0; }
+        }
+
+        .header {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--secondary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .systems-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        .system-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--secondary-color);
+            border-radius: 3px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            min-height: 120px;
+        }
+
+        .system-card:hover {
+            box-shadow: 0 0 10px var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .system-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .system-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .system-status.on {
+            background-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .system-status.off {
+            background-color: var(--error-color);
+            box-shadow: 0 0 5px var(--error-color);
+        }
+
+        .system-status.warning {
+            background-color: var(--warning-color);
+            box-shadow: 0 0 10px var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .system-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .system-btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .log-panel {
+            border-top: 1px solid var(--secondary-color);
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            line-height: 1.3;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time {
+            color: var(--secondary-color);
+        }
+
+        .log-message.warning {
+            color: var(--warning-color);
+        }
+
+        .log-message.error {
+            color: var(--error-color);
+        }
+
+        .log-message.alert {
+            animation: blink 0.5s steps(2, start) infinite;
+        }
+
+        @keyframes blink {
+            to { visibility: hidden; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--primary-color);
+            vertical-align: middle;
+            margin-left: 3px;
+            animation: blinkCursor 1s steps(2) infinite;
+        }
+
+        @keyframes blinkCursor {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            border-top: 1px solid var(--secondary-color);
+        }
+
+        .report-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .report-btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        @media (max-width: 600px) {
+            .systems-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .header {
+                font-size: 1.2rem;
+            }
+            
+            .system-name {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Scanner effect */
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                rgba(0, 255, 65, 0.5), 
+                transparent);
+            animation: scanLine 8s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes scanLine {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="scanner-line"></div>
+        <div class="header">
+            СТАНЦИЯ ZETA<span class="cursor"></span>
+        </div>
+        <div class="status-bar">
+            <div class="status-time" id="status-time">[--:--:--]</div>
+            <div class="status-alert" id="status-alert">СИСТЕМЫ В НОРМЕ</div>
+        </div>
+        <div class="main-content">
+            <div class="systems-panel" id="systems-panel">
+                <!-- Systems will be added by JS -->
+            </div>
+        </div>
+        <div class="log-panel" id="log-panel">
+            <!-- Log entries will be added by JS -->
+        </div>
+        <div class="controls">
+            <button class="report-btn" id="report-btn">ОТЧЁТ</button>
+        </div>
+    </div>
+
+    <audio id="alert-sound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
+
+    <script>
+        // Telegram WebApp integration
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                
+                // Add log entry about Telegram initialization
+                addLogEntry("Telegram WebApp API подключен");
+                
+                // Set theme params
+                const themeParams = Telegram.WebApp.themeParams;
+                if (themeParams.bg_color) {
+                    document.documentElement.style.setProperty('--bg-color', `#${themeParams.bg_color}`);
+                }
+                if (themeParams.text_color) {
+                    document.documentElement.style.setProperty('--primary-color', `#${themeParams.text_color}`);
+                }
+                if (themeParams.hint_color) {
+                    document.documentElement.style.setProperty('--secondary-color', `#${themeParams.hint_color}`);
+                }
+            } else {
+                addLogEntry("ОШИБКА: Telegram WebApp API не обнаружен", "error");
+            }
+            
+            // Initialize station systems
+            initStation();
+            
+            // Start timers
+            startTimers();
+            
+            // Set up report button
+            document.getElementById('report-btn').addEventListener('click', sendReport);
+        });
+
+        // Station systems data
+        const stationSystems = {
+            power: {
+                name: "Энергия",
+                status: "on",
+                critical: true,
+                lastChecked: 0
+            },
+            shields: {
+                name: "Защитные поля",
+                status: "off",
+                critical: false,
+                lastChecked: 0
+            },
+            scanners: {
+                name: "Сканеры",
+                status: "on",
+                critical: false,
+                lastChecked: 0
+            },
+            comms: {
+                name: "Связь",
+                status: "on",
+                critical: false,
+                lastChecked: 0
+            },
+            ventilation: {
+                name: "Вентиляция",
+                status: "off",
+                critical: true,
+                lastChecked: 0
+            },
+            generator: {
+                name: "Генератор",
+                status: "on",
+                critical: true,
+                lastChecked: 0
+            }
+        };
+
+        // Game state
+        const gameState = {
+            lastEventTime: 0,
+            alertActive: false,
+            systemFailures: 0,
+            lastSystemCheck: Date.now()
+        };
+
+        // Initialize station systems UI
+        function initStation() {
+            const systemsPanel = document.getElementById('systems-panel');
+            
+            for (const [key, system] of Object.entries(stationSystems)) {
+                const systemCard = document.createElement('div');
+                systemCard.className = 'system-card';
+                systemCard.id = `system-${key}`;
+                
+                systemCard.innerHTML = `
+                    <div class="system-name">${system.name}</div>
+                    <div class="system-status ${system.status}"></div>
+                    <button class="system-btn" data-system="${key}">
+                        ${system.status === 'on' ? 'Выключить' : 'Включить'}
+                    </button>
+                `;
+                
+                systemsPanel.appendChild(systemCard);
+            }
+            
+            // Add event listeners to system buttons
+            document.querySelectorAll('.system-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const systemKey = this.getAttribute('data-system');
+                    toggleSystem(systemKey);
+                });
+            });
+            
+            // Initial log entries
+            addLogEntry("Инициализация систем станции ZETA");
+            addLogEntry("Все системы загружены и готовы к работе");
+            addLogEntry("Ожидание команд...");
+        }
+
+        // Toggle system status
+        function toggleSystem(systemKey) {
+            const system = stationSystems[systemKey];
+            system.status = system.status === 'on' ? 'off' : 'on';
+            system.lastChecked = Date.now();
+            
+            // Update UI
+            const systemCard = document.querySelector(`#system-${systemKey}`);
+            const statusIndicator = systemCard.querySelector('.system-status');
+            const button = systemCard.querySelector('.system-btn');
+            
+            statusIndicator.className = 'system-status ' + system.status;
+            button.textContent = system.status === 'on' ? 'Выключить' : 'Включить';
+            
+            // Add log entry
+            addLogEntry(`${system.name} ${system.status === 'on' ? 'включены' : 'выключены'}`);
+            
+            // Check if critical system was turned off
+            if (system.critical && system.status === 'off') {
+                addLogEntry(`ВНИМАНИЕ: ${system.name} отключены!`, "warning");
+                triggerAlert();
+            }
+            
+            // If critical system was turned on, check if alert should be canceled
+            if (system.critical && system.status === 'on' && gameState.alertActive) {
+                checkSystemsStatus();
+            }
+        }
+
+        // Add entry to log
+        function addLogEntry(message, type = "normal") {
+            const logPanel = document.getElementById('log-panel');
+            const now = new Date();
+            const timeString = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.textContent = timeString;
+            
+            const messageSpan = document.createElement('span');
+            messageSpan.className = `log-message ${type}`;
+            messageSpan.textContent = ` > ${message}`;
+            
+            logEntry.appendChild(timeSpan);
+            logEntry.appendChild(messageSpan);
+            
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+            
+            // Special handling for alert messages
+            if (type === 'warning' || type === 'error') {
+                playAlertSound();
+            }
+        }
+
+        // Play alert sound
+        function playAlertSound() {
+            const alertSound = document.getElementById('alert-sound');
+            if (alertSound) {
+                alertSound.currentTime = 0;
+                alertSound.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }
+
+        // Trigger station alert
+        function triggerAlert() {
+            if (!gameState.alertActive) {
+                gameState.alertActive = true;
+                document.getElementById('status-alert').textContent = "ТРЕВОГА!";
+                document.getElementById('status-alert').className = 'status-alert warning';
+                addLogEntry("ВНИМАНИЕ: АКТИВИРОВАНА СИСТЕМНАЯ ТРЕВОГА", "warning");
+                playAlertSound();
+            }
+        }
+
+        // Cancel station alert
+        function cancelAlert() {
+            if (gameState.alertActive) {
+                gameState.alertActive = false;
+                document.getElementById('status-alert').textContent = "СИСТЕМЫ В НОРМЕ";
+                document.getElementById('status-alert').className = 'status-alert';
+                addLogEntry("Тревога отменена, все системы функционируют нормально");
+            }
+        }
+
+        // Check systems status
+        function checkSystemsStatus() {
+            let allCriticalOk = true;
+            
+            for (const [key, system] of Object.entries(stationSystems)) {
+                if (system.critical && system.status !== 'on') {
+                    allCriticalOk = false;
+                    break;
+                }
+            }
+            
+            if (allCriticalOk) {
+                cancelAlert();
+                gameState.systemFailures = 0;
+            }
+        }
+
+        // Random events generator
+        function generateRandomEvent() {
+            const events = [
+                { message: "Обнаружен неопознанный объект на радарах", affectedSystem: "scanners", severity: "warning" },
+                { message: "Колебания в энергосистеме", affectedSystem: "power", severity: "warning" },
+                { message: "Помехи в каналах связи", affectedSystem: "comms", severity: "normal" },
+                { message: "Повышение температуры в отсеке вентиляции", affectedSystem: "ventilation", severity: "warning" },
+                { message: "Сканирование окружающего пространства...", affectedSystem: null, severity: "normal" },
+                { message: "Нестабильность в защитных полях", affectedSystem: "shields", severity: "warning" },
+                { message: "Корабль-разведчик на подходе", affectedSystem: null, severity: "normal" },
+                { message: "Аномальные показания датчиков", affectedSystem: "scanners", severity: "warning" },
+                { message: "Автоматическая диагностика систем...", affectedSystem: null, severity: "normal" },
+                { message: "Перегрузка генератора", affectedSystem: "generator", severity: "warning" }
+            ];
+            
+            const randomEvent = events[Math.floor(Math.random() * events.length)];
+            addLogEntry(randomEvent.message, randomEvent.severity);
+            
+            // Sometimes affect a system
+            if (randomEvent.affectedSystem && Math.random() > 0.7) {
+                const system = stationSystems[randomEvent.affectedSystem];
+                if (system.status === 'on' && Math.random() > 0.5) {
+                    // Randomly turn off the system
+                    system.status = 'off';
+                    
+                    // Update UI
+                    const systemCard = document.querySelector(`#system-${randomEvent.affectedSystem}`);
+                    const statusIndicator = systemCard.querySelector('.system-status');
+                    const button = systemCard.querySelector('.system-btn');
+                    
+                    statusIndicator.className = 'system-status off';
+                    button.textContent = 'Включить';
+                    
+                    addLogEntry(`СИСТЕМА ${system.name.toUpperCase()} ОТКЛЮЧЕНА АВТОМАТИЧЕСКИ`, "warning");
+                    
+                    if (system.critical) {
+                        triggerAlert();
+                    }
+                }
+            }
+        }
+
+        // System failure check
+        function checkForFailures() {
+            const now = Date.now();
+            let anyCriticalOff = false;
+            
+            for (const [key, system] of Object.entries(stationSystems)) {
+                // If critical system is off for more than 60 seconds
+                if (system.critical && system.status === 'off' && now - system.lastChecked > 60000) {
+                    anyCriticalOff = true;
+                    gameState.systemFailures++;
+                    
+                    if (gameState.systemFailures >= 3) {
+                        // Catastrophic failure
+                        addLogEntry(`КРИТИЧЕСКИЙ СБОЙ: ${system.name.toUpperCase()} ОТКЛЮЧЕНЫ СЛИШКОМ ДОЛГО`, "error");
+                        triggerAlert();
+                    } else {
+                        addLogEntry(`Предупреждение: ${system.name} отключены слишком долго`, "warning");
+                    }
+                }
+            }
+            
+            if (!anyCriticalOff && gameState.systemFailures > 0) {
+                gameState.systemFailures = 0;
+            }
+        }
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+            document.getElementById('status-time').textContent = timeString;
+        }
+
+        // Start timers
+        function startTimers() {
+            // Update clock every second
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Generate random events every 30 seconds
+            setInterval(() => {
+                generateRandomEvent();
+            }, 30000);
+            
+            // Check for system failures every 10 seconds
+            setInterval(() => {
+                checkForFailures();
+            }, 10000);
+            
+            // Initial random event after 15 seconds
+            setTimeout(() => {
+                generateRandomEvent();
+            }, 15000);
+        }
+
+        // Send report to Telegram
+        function sendReport() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const reportData = {
+                    systems: {},
+                    status: gameState.alertActive ? "ALERT" : "NORMAL",
+                    timestamp: Date.now(),
+                    failures: gameState.systemFailures
+                };
+                
+                for (const [key, system] of Object.entries(stationSystems)) {
+                    reportData.systems[key] = {
+                        name: system.name,
+                        status: system.status,
+                        lastChecked: system.lastChecked
+                    };
+                }
+                
+                Telegram.WebApp.sendData(JSON.stringify(reportData));
+                addLogEntry("Отчёт отправлен в Центр Управления");
+            } else {
+                addLogEntry("ОШИБКА: Не удалось отправить отчёт", "error");
+            }
+        }
+
+        // Base64 encoded short beep sound for alert
+        // This is a very short version to keep the HTML file size reasonable
+        const shortBeep = "UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...";
+        document.getElementById('alert-sound').src = `data:audio/wav;base64,${shortBeep}`;
+    </script>
+</body>
+</html>
